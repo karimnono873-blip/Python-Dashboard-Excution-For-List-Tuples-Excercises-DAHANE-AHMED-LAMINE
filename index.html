@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Python Data Structures & Algorithms</title>
+    <style>
+        /* ==========================================================================
+           1. CSS VARIABLES & BASE THEME
+           ========================================================================== */
+        :root {
+            /* Backgrounds */
+            --bg-main: #0d1117;
+            --bg-panel: #161b22;
+            --bg-card: #21262d;
+            --bg-terminal: #010409;
+            --bg-explanation: #1a202c;
+            
+            /* Borders */
+            --border-color: #30363d;
+            --border-focus: #58a6ff;
+            
+            /* Text Colors */
+            --text-main: #c9d1d9;
+            --text-muted: #8b949e;
+            --text-heading: #ffffff;
+            
+            /* Terminal Colors */
+            --term-text: #00ff00;
+            --term-sys: #8b949e;
+            --term-err: #ff7b72;
+            --term-warn: #d29922;
+            --term-info: #58a6ff;
+            
+            /* Python Syntax Highlighting */
+            --py-kw: #ff7b72;       /* Keywords (def, for, if) */
+            --py-func: #d2a8ff;     /* Built-in Functions */
+            --py-str: #a5d6ff;      /* Strings */
+            --py-num: #79c0ff;      /* Numbers */
+            --py-com: #8b949e;      /* Comments */
+            --py-op: #c9d1d9;       /* Operators */
+            --py-cls: #ffc233;      /* Classes/Modules */
+            
+            /* UI Accents */
+            --accent-blue: #58a6ff;
+            --accent-green: #238636;
+            --accent-green-hover: #2ea043;
+            --accent-warn: #d29922;
+
+            /* Fonts */
+            --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            --font-mono: "Fira Code", "JetBrains Mono", Consolas, "Courier New", monospace;
+        }
+
+        /* ==========================================================================
+           2. GLOBAL RESET
+           ========================================================================== */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            scrollbar-width: thin;
+            scrollbar-color: var(--border-color) var(--bg-main);
+        }
+
+        body {
+            font-family: var(--font-ui);
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+            line-height: 1.6;
+        }
+
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-main); }
+        ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+        /* ==========================================================================
+           3. LAYOUT & NAVIGATION
+           ========================================================================== */
+        .navbar {
+            height: 60px;
+            background-color: var(--bg-panel);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            flex-shrink: 0;
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-heading);
+        }
+
+        .brand-logo {
+            width: 26px;
+            height: 26px;
+        }
+
+        .main-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: 320px;
+            background-color: var(--bg-panel);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            padding-top: 15px;
+        }
+
+        .nav-section-title {
+            padding: 10px 20px 5px 20px;
+            font-size: 11px;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: var(--text-muted);
+            letter-spacing: 1px;
+        }
+
+        .nav-item {
+            padding: 12px 20px 12px 30px;
+            cursor: pointer;
+            display: block;
+            color: var(--text-main);
+            text-decoration: none;
+            font-size: 14px;
+            border-left: 3px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .nav-item:hover {
+            background-color: rgba(88, 166, 255, 0.05);
+            color: var(--text-heading);
+        }
+
+        .nav-item.active {
+            background-color: rgba(88, 166, 255, 0.1);
+            border-left-color: var(--accent-blue);
+            color: var(--accent-blue);
+            font-weight: 600;
+        }
+
+        /* ==========================================================================
+           4. MAIN CONTENT AREA & TYPOGRAPHY
+           ========================================================================== */
+        .workspace {
+            flex: 1;
+            overflow-y: auto;
+            scroll-behavior: smooth;
+            display: flex;
+            flex-direction: column;
+            padding-bottom: 50px;
+        }
+
+        .content-section {
+            display: none;
+            padding: 40px 60px;
+            max-width: 1050px;
+            margin: 0 auto;
+            width: 100%;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1 { font-size: 26px; color: var(--text-heading); margin-bottom: 10px; }
+        h2 { font-size: 20px; color: var(--accent-blue); margin: 35px 0 15px 0; padding-bottom: 8px; border-bottom: 1px solid var(--border-color); }
+        p { margin-bottom: 20px; color: var(--text-muted); font-size: 15px; }
+        
+        ul { margin-bottom: 20px; padding-left: 20px; color: var(--text-muted); line-height: 1.8; }
+        code { background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px; font-family: var(--font-mono); font-size: 13px; color: var(--text-heading); }
+
+        .objective-card {
+            background-color: rgba(88, 166, 255, 0.05);
+            border: 1px solid rgba(88, 166, 255, 0.2);
+            border-left: 4px solid var(--accent-blue);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+
+        /* Algorithm Explanation Boxes */
+        .algo-explanation {
+            background-color: var(--bg-explanation);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .algo-explanation h3 {
+            font-size: 16px;
+            color: var(--text-heading);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .complexity-badge {
+            background: rgba(139, 148, 158, 0.15);
+            color: var(--text-muted);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-family: var(--font-mono);
+            font-size: 12px;
+            margin-right: 10px;
+        }
+
+        /* ==========================================================================
+           5. CODE EDITOR STYLING
+           ========================================================================== */
+        .code-wrapper {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+        }
+
+        .code-header {
+            background-color: var(--bg-panel);
+            padding: 10px 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .code-tab {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: var(--font-mono);
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .btn-run {
+            background-color: var(--accent-green);
+            color: #fff;
+            border: none;
+            padding: 7px 16px;
+            border-radius: 5px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: 0.2s;
+        }
+
+        .btn-run:hover { background-color: var(--accent-green-hover); box-shadow: 0 0 10px rgba(35, 134, 54, 0.4); }
+        .btn-run:disabled { background-color: var(--border-color); color: var(--text-muted); cursor: not-allowed; box-shadow: none; }
+
+        .code-body {
+            display: flex;
+            padding: 20px 0;
+            overflow-x: auto;
+            background-color: #0d1117;
+        }
+
+        .line-numbers {
+            min-width: 45px;
+            padding-right: 15px;
+            text-align: right;
+            color: #484f58;
+            font-family: var(--font-mono);
+            font-size: 14px;
+            user-select: none;
+            border-right: 1px solid var(--border-color);
+            margin-right: 15px;
+        }
+
+        .code-content {
+            flex: 1;
+            font-family: var(--font-mono);
+            font-size: 14px;
+            white-space: pre;
+            color: var(--text-main);
+            line-height: 1.6;
+        }
+
+        /* Highlight Classes */
+        .kw { color: var(--py-kw); font-weight: bold; }
+        .fn { color: var(--py-func); }
+        .st { color: var(--py-str); }
+        .nm { color: var(--py-num); }
+        .cm { color: var(--py-com); font-style: italic; }
+        .op { color: var(--py-op); }
+        .cls { color: var(--py-cls); }
+
+        /* ==========================================================================
+           6. TERMINAL EXECUTION RESULTS
+           ========================================================================== */
+        .terminal-container {
+            display: none; /* Hidden until run */
+            background-color: var(--bg-terminal);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 40px;
+            animation: fadeIn 0.4s ease-in;
+            box-shadow: inset 0 0 30px rgba(0,0,0,0.9);
+            position: relative;
+        }
+
+        /* Terminal Scanline Effect */
+        .terminal-container::after {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 2;
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+            opacity: 0.3;
+        }
+
+        .terminal-header {
+            background-color: var(--bg-panel);
+            padding: 8px 20px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 12px;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+            z-index: 3;
+        }
+
+        .terminal-output {
+            padding: 20px;
+            font-family: var(--font-mono);
+            font-size: 13.5px;
+            line-height: 1.6;
+            color: var(--term-text);
+            white-space: pre-wrap;
+            position: relative;
+            z-index: 3;
+        }
+
+        .t-sys { color: var(--term-sys); }
+        .t-err { color: var(--term-err); }
+        .t-info { color: var(--term-info); }
+        .t-warn { color: var(--term-warn); }
+
+        .loader {
+            display: none;
+            width: 12px;
+            height: 12px;
+            border: 2px solid #fff;
+            border-bottom-color: transparent;
+            border-radius: 50%;
+            animation: rotate 1s linear infinite;
+        }
+
+        @keyframes rotate { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    </style>
+</head>
+<body>
+
+    <header class="navbar">
+        <div class="nav-brand">
+            <svg class="brand-logo" viewBox="0 0 110 110" xmlns="http://www.w3.org/2000/svg">
+                <path d="M53.9.1C24.4.1 26.6 12.8 26.6 12.8l.1 13.5h28v4H20.4S-.1 28-.1 55.4c0 27.5 17.6 28 17.6 28h9.5v-13s-.2-15.5 15.3-15.5H58s14.8-.5 14.8-15V15.7S73.5.1 53.9.1zm-15 8.7c2.5 0 4.5 2 4.5 4.6 0 2.5-2 4.6-4.5 4.6s-4.5-2-4.5-4.6c0-2.5 2-4.5 4.5-4.5zM76 31.7c0 2.5-2 4.5-4.5 4.5s-4.5-2-4.5-4.5 2-4.5 4.5-4.5 4.5 2 4.5 4.5zM56 110c29.5 0 27.4-12.7 27.4-12.7l-.1-13.5h-28v-4h34.3s20.5 2.3 20.5-25.1c0-27.5-17.6-28-17.6-28h-9.5v13s.2 15.5-15.3 15.5H52s-14.8.5-14.8 15v14.2S36.5 110 56 110z" fill="#3776ab"/>
+                <path d="M53.9.1C24.4.1 26.6 12.8 26.6 12.8l.1 13.5h28v4H20.4S-.1 28-.1 55.4c0 14.4 4.5 22 9.5 25.4V68.5s-.2-15.5 15.3-15.5H58s14.8-.5 14.8-15V15.7S73.5.1 53.9.1zm-15 8.7c2.5 0 4.5 2 4.5 4.6 0 2.5-2 4.6-4.5 4.6s-4.5-2-4.5-4.5 2-4.5 4.5-4.5z" fill="#ffd343"/>
+            </svg>
+            Python Data Structures Studio
+        </div>
+        <div style="font-size: 13px; color: var(--accent-green);">
+            ● Python 3.10 Runtime Ready
+        </div>
+    </header>
+
+    <div class="main-container">
+        
+        <aside class="sidebar">
+            <div class="nav-section-title">Project Overview</div>
+            <a class="nav-item active" onclick="switchView('intro', this)">Objective & Instructions</a>
+            
+            <div class="nav-section-title" style="margin-top: 15px;">List Operations</div>
+            <a class="nav-item" onclick="switchView('q1', this)">Q1: Multiply List Items</a>
+            <a class="nav-item" onclick="switchView('q2', this)">Q2: Sort Tuple List</a>
+            
+            <div class="nav-section-title" style="margin-top: 15px;">Dictionary Mapping</div>
+            <a class="nav-item" onclick="switchView('q3', this)">Q3: Combine Dictionaries</a>
+            <a class="nav-item" onclick="switchView('q4', this)">Q4: Generate Squares Dict</a>
+            
+            <div class="nav-section-title" style="margin-top: 15px;">Advanced Sorting & Sets</div>
+            <a class="nav-item" onclick="switchView('q5', this)">Q5: Sort Tuples by Float</a>
+            <a class="nav-item" onclick="switchView('q6', this)">Q6: Set Manipulations</a>
+        </aside>
+
+        <main class="workspace" id="main-scroll">
+            
+            <section id="view-intro" class="content-section active">
+                <h1>What You're Aiming For</h1>
+                <div class="objective-card">
+                    <p style="margin: 0; color: var(--text-heading);">
+                        Develop and refine your Python programming skills through practical exercises focused on manipulating data structures (Lists, Dictionaries, Tuples, and Sets) and implementing fundamental algorithms.
+                    </p>
+                </div>
+                
+                <h2>Instructions Overview</h2>
+                <p>You will develop your understanding and application of Python programming through this series of 6 exercises. Each question is designed to challenge and enhance your skills in working with Python’s built-in data structures and standard library functions.</p>
+                <p>Use the sidebar navigation to view the problem constraints, the resulting Python code, the algorithm explanation, and a simulated terminal to see the execution results for each specific question.</p>
+            </section>
+
+            <section id="view-q1" class="content-section">
+                <h1>Question 1: Multiply List Items</h1>
+                <p><strong>Constraint:</strong> Write a Python program that multiplies all the items in a list.</p>
+                <ul>
+                    <li>Sample list = <code>[2, 3, 6]</code></li>
+                    <li>Expected Result = <code>36</code></li>
+                </ul>
+
+                <div class="code-wrapper">
+                    <div class="code-header">
+                        <div class="code-tab">
+                            <svg class="tab-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                            q1_multiply.py
+                        </div>
+                        <button class="btn-run" onclick="runScript('term-q1', this)">
+                            <div class="loader"></div> <span class="btn-text">▶ Run Script</span>
+                        </button>
+                    </div>
+                    <div class="code-body">
+                        <div class="line-numbers" id="lines-q1"></div>
+                        <div class="code-content">
+<span class="kw">def</span> <span class="fn">multiply_list</span>(items):
+    <span class="cm">"""Multiplies all numerical integers within a given list."""</span>
+    <span class="cm"># Edge case: If the list is empty, return 0 or handle appropriately</span>
+    <span class="kw">if not</span> items:
+        <span class="kw">return</span> <span class="nm">0</span>
+        
+    result <span class="op">=</span> <span class="nm">1</span>
+    <span class="kw">for</span> item <span class="kw">in</span> items:
+        result <span class="op">*=</span> item
+    <span class="kw">return</span> result
+
+<span class="cm"># Define the sample list</span>
+sample_list <span class="op">=</span> [<span class="nm">2</span>, <span class="nm">3</span>, <span class="nm">6</span>]
+
+<span class="cm"># Execute the function and print detailed output</span>
+<span class="fn">print</span>(<span class="st">"--- List Multiplication Execution ---"</span>)
+<span class="fn">print</span>(<span class="st">f"Processing list: {sample_list}"</span>)
+output <span class="op">=</span> multiply_list(sample_list)
+<span class="fn">print</span>(<span class="st">f"Result = {output}"</span>)
+                        </div>
+                    </div>
+                </div>
+
+                <div class="algo-explanation">
+                    <h3>Algorithm Analysis</h3>
+                    <p><span class="complexity-badge">Time: O(N)</span> <span class="complexity-badge">Space: O(1)</span></p>
+                    <p>We initialize a <code>result</code> variable at 1 (the multiplicative identity). We then iterate through every item in the list exactly once, multiplying it against the running total. The time complexity scales linearly with the size of the list.</p>
+                </div>
+
+                <div class="terminal-container" id="term-q1">
+                    <div class="terminal-header">
+                        <span>Terminal</span>
+                        <span>python q1_multiply.py</span>
+                    </div>
+                    <div class="terminal-output">
+<span class="t-sys">$ python q1_multiply.py</span>
+<span class="t-info">[INFO] Loading python environment...</span>
+--- List Multiplication Execution ---
+Processing list: [2, 3, 6]
+Result = 36
+
+<span class="t-sys">Process finished with exit code 0</span></div>
+                </div>
+            </section>
+
+            <section id="view-q2" class="content-section">
+                <h1>Question 2: Sort List of Tuples</h1>
+                <p><strong>Constraint:</strong> Write a Python program to get a list, sorted in increasing order by the last element in each tuple, from a given list of non-empty tuples. (Hint: You can use the sort function).</p>
+                <ul>
+                    <li>Sample List: <code>[(2, 5), (1, 2), (4, 4), (2, 3), (2, 1)]</code></li>
+                    <li>Expected result: <code>[(2, 1), (1, 2), (2, 3), (4, 4), (2, 5)]</code></li>
+                </ul>
+
+                <div class="code-wrapper">
+                    <div class="code-header">
+                        <div class="code-tab">
+                            <svg class="tab-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                            q2_sort_tuples.py
+                        </div>
+                        <button class="btn-run" onclick="runScript('term-q2', this)">
+                            <div class="loader"></div> <span class="btn-text">▶ Run Script</span>
+                        </button>
+                    </div>
+                    <div class="code-body">
+                        <div class="line-numbers" id="lines-q2"></div>
+                        <div class="code-content">
+<span class="kw">def</span> <span class="fn">get_last_element</span>(t):
+    <span class="cm">"""Helper function that returns the last element of a tuple."""</span>
+    <span class="kw">return</span> t[<span class="op">-</span><span class="nm">1</span>]
+
+<span class="kw">def</span> <span class="fn">sort_by_last_element</span>(tuples_list):
+    <span class="cm">"""Sorts a list of tuples based on the last element."""</span>
+    <span class="cm"># We could use the helper function above: key=get_last_element</span>
+    <span class="cm"># Or we can use an anonymous lambda function for brevity:</span>
+    <span class="kw">return</span> <span class="fn">sorted</span>(tuples_list, key<span class="op">=</span><span class="kw">lambda</span> x: x[<span class="op">-</span><span class="nm">1</span>])
+
+<span class="cm"># Define the sample list</span>
+sample_list <span class="op">=</span> [(<span class="nm">2</span>, <span class="nm">5</span>), (<span class="nm">1</span>, <span class="nm">2</span>), (<span class="nm">4</span>, <span class="nm">4</span>), (<span class="nm">2</span>, <span class="nm">3</span>), (<span class="nm">2</span>, <span class="nm">1</span>)]
+
+<span class="cm"># Execute the function and print</span>
+result <span class="op">=</span> sort_by_last_element(sample_list)
+<span class="fn">print</span>(<span class="st">f"Original List:\n{sample_list}\n"</span>)
+<span class="fn">print</span>(<span class="st">f"Sorted Result (by last element):\n{result}"</span>)
+                        </div>
+                    </div>
+                </div>
+
+                <div class="algo-explanation">
+                    <h3>Algorithm Analysis</h3>
+                    <p><span class="complexity-badge">Time: O(N log N)</span> <span class="complexity-badge">Space: O(N)</span></p>
+                    <p>Python's built-in <code>sorted()</code> function uses Timsort. By passing a custom <code>key</code> argument utilizing a <code>lambda</code> expression (<code>lambda x: x[-1]</code>), we instruct the sorting algorithm to evaluate each tuple solely by its last index instead of its first.</p>
+                </div>
+
+                <div class="terminal-container" id="term-q2">
+                    <div class="terminal-header">
+                        <span>Terminal</span>
+                        <span>python q2_sort_tuples.py</span>
+                    </div>
+                    <div class="terminal-output">
+<span class="t-sys">$ python q2_sort_tuples.py</span>
+Original List:
+[(2, 5), (1, 2), (4, 4), (2, 3), (2, 1)]
+
+Sorted Result (by last element):
+[(2, 1), (1, 2), (2, 3), (4, 4), (2, 5)]
+
+<span class="t-sys">Process finished with exit code 0</span></div>
+                </div>
+            </section>
+
+            <section id="view-q3" class="content-section">
+                <h1>Question 3: Combine Dictionaries</h1>
+                <p><strong>Constraint:</strong> Write a Python program that combines two dictionaries by adding values for common keys.</p>
+                <ul>
+                    <li><code>d1 = {'a': 100, 'b': 200, 'c':300}</code></li>
+                    <li><code>d2 = {'a': 300, 'b': 200, 'd':400}</code></li>
+                    <li>Expected result: <code>{'a': 400, 'b': 400, 'd': 400, 'c': 300}</code></li>
+                </ul>
+
+                <div class="code-wrapper">
+                    <div class="code-header">
+                        <div class="code-tab">
+                            <svg class="tab-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                            q3_combine_dicts.py
+                        </div>
+                        <button class="btn-run" onclick="runScript('term-q3', this)">
+                            <div class="loader"></div> <span class="btn-text">▶ Run Script</span>
+                        </button>
+                    </div>
+                    <div class="code-body">
+                        <div class="line-numbers" id="lines-q3"></div>
+                        <div class="code-content">
+<span class="kw">from</span> collections <span class="kw">import</span> Counter
+
+<span class="kw">def</span> <span class="fn">combine_dicts_with_counter</span>(dict1, dict2):
+    <span class="cm">"""Combines two dicts, adding values of common keys using Counter."""</span>
+    <span class="cm"># Counter naturally adds values for intersecting keys when using '+'</span>
+    combined <span class="op">=</span> <span class="cls">Counter</span>(dict1) <span class="op">+</span> <span class="cls">Counter</span>(dict2)
+    <span class="kw">return</span> <span class="fn">dict</span>(combined)
+
+<span class="kw">def</span> <span class="fn">combine_dicts_manual</span>(dict1, dict2):
+    <span class="cm">"""Combines two dicts using a standard loop and .get() fallback."""</span>
+    result <span class="op">=</span> dict1.copy()
+    <span class="kw">for</span> key, value <span class="kw">in</span> dict2.items():
+        <span class="cm"># If key exists, add value. If not, default to 0 and add value.</span>
+        result[key] <span class="op">=</span> result.get(key, <span class="nm">0</span>) <span class="op">+</span> value
+    <span class="kw">return</span> result
+
+<span class="cm"># Define the dictionaries</span>
+d1 <span class="op">=</span> {<span class="st">'a'</span>: <span class="nm">100</span>, <span class="st">'b'</span>: <span class="nm">200</span>, <span class="st">'c'</span>: <span class="nm">300</span>}
+d2 <span class="op">=</span> {<span class="st">'a'</span>: <span class="nm">300</span>, <span class="st">'b'</span>: <span class="nm">200</span>, <span class="st">'d'</span>: <span class="nm">400</span>}
+
+<span class="fn">print</span>(<span class="st">f"Dict 1: {d1}"</span>)
+<span class="fn">print</span>(<span class="st">f"Dict 2: {d2}\n"</span>)
+
+result_counter <span class="op">=</span> combine_dicts_with_counter(d1, d2)
+<span class="fn">print</span>(<span class="st">f"Combined (Counter approach): {result_counter}"</span>)
+                        </div>
+                    </div>
+                </div>
+
+                <div class="algo-explanation">
+                    <h3>Algorithm Analysis</h3>
+                    <p><span class="complexity-badge">Time: O(K)</span> <span class="complexity-badge">Space: O(K)</span></p>
+                    <p>Where K is the total number of unique keys across both dictionaries. Using Python's <code>collections.Counter</code> provides a mathematically elegant solution, as it overloads the <code>+</code> operator to automatically aggregate values mapped to matching string keys.</p>
+                </div>
+
+                <div class="terminal-container" id="term-q3">
+                    <div class="terminal-header">
+                        <span>Terminal</span>
+                        <span>python q3_combine_dicts.py</span>
+                    </div>
+                    <div class="terminal-output">
+<span class="t-sys">$ python q3_combine_dicts.py</span>
+Dict 1: {'a': 100, 'b': 200, 'c': 300}
+Dict 2: {'a': 300, 'b': 200, 'd': 400}
+
+Combined (Counter approach): {'a': 400, 'b': 400, 'c': 300, 'd': 400}
+
+<span class="t-sys">Process finished with exit code 0</span></div>
+                </div>
+            </section>
+
+            <section id="view-q4" class="content-section">
+                <h1>Question 4: Generate Squares Dictionary</h1>
+                <p><strong>Constraint:</strong> With a given integral number n, write a program to generate a dictionary that contains <code>(i, i*i)</code> such that `i` is an integral number between 1 and n (both included).</p>
+                <ul>
+                    <li>Input: <code>8</code></li>
+                    <li>Expected output: <code>{1: 1, 2: 4, 3: 9, 4: 16, 5: 25, 6: 36, 7: 49, 8: 64}</code></li>
+                </ul>
+
+                <div class="code-wrapper">
+                    <div class="code-header">
+                        <div class="code-tab">
+                            <svg class="tab-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                            q4_squares.py
+                        </div>
+                        <button class="btn-run" onclick="runScript('term-q4', this)">
+                            <div class="loader"></div> <span class="btn-text">▶ Run Script</span>
+                        </button>
+                    </div>
+                    <div class="code-body">
+                        <div class="line-numbers" id="lines-q4"></div>
+                        <div class="code-content">
+<span class="kw">def</span> <span class="fn">generate_squares_dict_loop</span>(n):
+    <span class="cm">"""Generates a dictionary using a standard for loop."""</span>
+    squares <span class="op">=</span> {}
+    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="nm">1</span>, n <span class="op">+</span> <span class="nm">1</span>):
+        squares[i] <span class="op">=</span> i <span class="op">*</span> i
+    <span class="kw">return</span> squares
+
+<span class="kw">def</span> <span class="fn">generate_squares_dict_comp</span>(n):
+    <span class="cm">"""Generates a dictionary using dict comprehension (Pythonic way)."""</span>
+    <span class="cm"># Syntax: {key: value for item in iterable}</span>
+    <span class="cm"># range(1, n + 1) ensures both 1 and n are included.</span>
+    <span class="kw">return</span> {i: i <span class="op">*</span> i <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="nm">1</span>, n <span class="op">+</span> <span class="nm">1</span>)}
+
+<span class="cm"># Test the function with input n = 8</span>
+input_n <span class="op">=</span> <span class="nm">8</span>
+result <span class="op">=</span> generate_squares_dict_comp(input_n)
+
+<span class="fn">print</span>(<span class="st">f"Input supplied: {input_n}"</span>)
+<span class="fn">print</span>(<span class="st">f"Generated Dictionary:\n{result}"</span>)
+                        </div>
+                    </div>
+                </div>
+
+                <div class="algo-explanation">
+                    <h3>Algorithm Analysis</h3>
+                    <p><span class="complexity-badge">Time: O(N)</span> <span class="complexity-badge">Space: O(N)</span></p>
+                    <p>While a standard <code>for</code> loop works perfectly, this code demonstrates <strong>Dictionary Comprehension</strong>. This is a highly optimized, single-line "Pythonic" approach to constructing dictionaries that runs slightly faster at the interpreter level than appending via a loop.</p>
+                </div>
+
+                <div class="terminal-container" id="term-q4">
+                    <div class="terminal-header">
+                        <span>Terminal</span>
+                        <span>python q4_squares.py</span>
+                    </div>
+                    <div class="terminal-output">
+<span class="t-sys">$ python q4_squares.py</span>
+Input supplied: 8
+Generated Dictionary:
+{1: 1, 2: 4, 3: 9, 4: 16, 5: 25, 6: 36, 7: 49, 8: 64}
+
+<span class="t-sys">Process finished with exit code 0</span></div>
+                </div>
+            </section>
+
+            <section id="view-q5" class="content-section">
+                <h1>Question 5: Sort Tuple by Float Element</h1>
+                <p><strong>Constraint:</strong> Write a program to sort a tuple by its float element.</p>
+                <ul>
+                    <li>Input: <code>[('item1', '12.20'), ('item2', '15.10'), ('item3', '24.5')]</code></li>
+                    <li>Expected result: <code>[('item3', '24.5'), ('item2', '15.10'), ('item1', '12.20')]</code></li>
+                </ul>
+
+                <div class="code-wrapper">
+                    <div class="code-header">
+                        <div class="code-tab">
+                            <svg class="tab-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                            q5_sort_float.py
+                        </div>
+                        <button class="btn-run" onclick="runScript('term-q5', this)">
+                            <div class="loader"></div> <span class="btn-text">▶ Run Script</span>
+                        </button>
+                    </div>
+                    <div class="code-body">
+                        <div class="line-numbers" id="lines-q5"></div>
+                        <div class="code-content">
+<span class="kw">def</span> <span class="fn">sort_by_float</span>(tuple_list):
+    <span class="cm">"""</span>
+<span class="cm">    Sorts list of tuples descending based on the float conversion </span>
+<span class="cm">    of the string located at the second index.</span>
+<span class="cm">    """</span>
+    <span class="cm"># 1. key=lambda x: float(x[1]) parses the string into an actual float </span>
+    <span class="cm">#    so mathematical sorting occurs rather than alphabetical sorting.</span>
+    <span class="cm"># 2. reverse=True triggers descending order to match the expected output.</span>
+    
+    <span class="kw">return</span> <span class="fn">sorted</span>(tuple_list, key<span class="op">=</span><span class="kw">lambda</span> x: <span class="fn">float</span>(x[<span class="nm">1</span>]), reverse<span class="op">=</span><span class="kw">True</span>)
+
+<span class="cm"># Define sample data (Notice the numbers are actually strings)</span>
+sample_data <span class="op">=</span> [(<span class="st">'item1'</span>, <span class="st">'12.20'</span>), (<span class="st">'item2'</span>, <span class="st">'15.10'</span>), (<span class="st">'item3'</span>, <span class="st">'24.5'</span>)]
+
+<span class="cm"># Execute and print</span>
+result <span class="op">=</span> sort_by_float(sample_data)
+<span class="fn">print</span>(<span class="st">f"Expected descending result:\n{result}"</span>)
+                        </div>
+                    </div>
+                </div>
+
+                <div class="algo-explanation">
+                    <h3>Algorithm Analysis</h3>
+                    <p><span class="complexity-badge">Time: O(N log N)</span> <span class="complexity-badge">Space: O(N)</span></p>
+                    <p>Because the numbers are enclosed in quotes (e.g., <code>'24.5'</code>), they are string types. If we sorted them without the <code>float()</code> cast in the lambda key, the algorithm would perform lexicographical sorting, which behaves unpredictably with decimal string numbers. By casting to float, we ensure accurate numerical comparison.</p>
+                </div>
+
+                <div class="terminal-container" id="term-q5">
+                    <div class="terminal-header">
+                        <span>Terminal</span>
+                        <span>python q5_sort_float.py</span>
+                    </div>
+                    <div class="terminal-output">
+<span class="t-sys">$ python q5_sort_float.py</span>
+Expected descending result:
+[('item3', '24.5'), ('item2', '15.10'), ('item1', '12.20')]
+
+<span class="t-sys">Process finished with exit code 0</span></div>
+                </div>
+            </section>
+
+            <section id="view-q6" class="content-section">
+                <h1>Question 6: Set Operations</h1>
+                <p><strong>Constraint:</strong> Write a Python program to create a set. Then iterate over the set. Finally, add members to the set and remove items from it.</p>
+                
+                <div class="code-wrapper">
+                    <div class="code-header">
+                        <div class="code-tab">
+                            <svg class="tab-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                            q6_sets.py
+                        </div>
+                        <button class="btn-run" onclick="runScript('term-q6', this)">
+                            <div class="loader"></div> <span class="btn-text">▶ Run Script</span>
+                        </button>
+                    </div>
+                    <div class="code-body">
+                        <div class="line-numbers" id="lines-q6"></div>
+                        <div class="code-content">
+<span class="cm"># 1. Create a set using curly braces</span>
+my_set <span class="op">=</span> {<span class="nm">0</span>, <span class="nm">1</span>, <span class="nm">2</span>, <span class="nm">3</span>, <span class="nm">4</span>}
+<span class="fn">print</span>(<span class="st">f"Initial Set (Type: {type(my_set)}): {my_set}\n"</span>)
+
+<span class="cm"># 2. Iterate over the set</span>
+<span class="fn">print</span>(<span class="st">"Iterating over set elements:"</span>)
+<span class="kw">for</span> item <span class="kw">in</span> my_set:
+    <span class="fn">print</span>(<span class="st">f" - Element: {item}"</span>)
+
+<span class="cm"># 3. Add members to the set</span>
+<span class="cm"># Note: Adding an existing element (like 1) has no effect as sets enforce uniqueness</span>
+my_set.add(<span class="nm">5</span>)
+my_set.add(<span class="nm">6</span>)
+my_set.add(<span class="nm">1</span>) 
+<span class="fn">print</span>(<span class="st">f"\nSet after adding 5, 6 (and attempting to add duplicate 1):\n{my_set}"</span>)
+
+<span class="cm"># 4. Remove items from the set</span>
+<span class="cm"># Using discard() safely removes an item. It does nothing if the item doesn't exist.</span>
+my_set.discard(<span class="nm">2</span>) 
+<span class="cm"># remove() raises a KeyError if the item is not found, so it's stricter.</span>
+my_set.remove(<span class="nm">0</span>)  
+
+<span class="fn">print</span>(<span class="st">f"\nFinal Set after removing 0 and 2:\n{my_set}"</span>)
+                        </div>
+                    </div>
+                </div>
+
+                <div class="algo-explanation">
+                    <h3>Algorithm Analysis</h3>
+                    <p><span class="complexity-badge">Lookups: O(1)</span> <span class="complexity-badge">Insertions: O(1)</span></p>
+                    <p>Sets in Python are implemented as Hash Tables. This makes checking for membership (e.g., <code>if x in my_set:</code>), adding members, and removing members incredibly fast. However, because they are hashed, sets are inherently <strong>unordered</strong> and do not support index-based retrieval (like <code>my_set[0]</code>).</p>
+                </div>
+
+                <div class="terminal-container" id="term-q6">
+                    <div class="terminal-header">
+                        <span>Terminal</span>
+                        <span>python q6_sets.py</span>
+                    </div>
+                    <div class="terminal-output">
+<span class="t-sys">$ python q6_sets.py</span>
+Initial Set (Type: &lt;class 'set'&gt;): {0, 1, 2, 3, 4}
+
+Iterating over set elements:
+ - Element: 0
+ - Element: 1
+ - Element: 2
+ - Element: 3
+ - Element: 4
+
+Set after adding 5, 6 (and attempting to add duplicate 1):
+{0, 1, 2, 3, 4, 5, 6}
+
+Final Set after removing 0 and 2:
+{1, 3, 4, 5, 6}
+
+<span class="t-sys">Process finished with exit code 0</span></div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <script>
+        // --- Line Number Generation ---
+        // Dynamically counts the lines inside the code blocks to generate the number gutter
+        function populateLineNumbers() {
+            const codeBlocks = document.querySelectorAll('.code-content');
+            codeBlocks.forEach(block => {
+                const lineContainer = block.previousElementSibling;
+                if(lineContainer && lineContainer.classList.contains('line-numbers')) {
+                    const lineCount = block.innerHTML.split('\n').length - 1;
+                    let html = '';
+                    for(let i=1; i<=lineCount; i++) {
+                        html += `<div>${i}</div>`;
+                    }
+                    lineContainer.innerHTML = html;
+                }
+            });
+        }
+
+        window.onload = () => {
+            populateLineNumbers();
+        };
+
+        // --- Navigation Logic ---
+        function switchView(viewId, element) {
+            // Reset active states on navigation links
+            document.querySelectorAll('.nav-item').forEach(link => link.classList.remove('active'));
+            element.classList.add('active');
+
+            // Hide all views, then display the requested view
+            document.querySelectorAll('.content-section').forEach(section => section.classList.remove('active'));
+            document.getElementById('view-' + viewId).classList.add('active');
+
+            // Reset scrolling
+            document.getElementById('main-scroll').scrollTop = 0;
+            
+            // Hide any open terminals when switching views
+            document.querySelectorAll('.terminal-container').forEach(term => term.style.display = 'none');
+            
+            // Reset run buttons
+            document.querySelectorAll('.btn-run').forEach(btn => {
+                btn.disabled = false;
+                btn.style.backgroundColor = 'var(--accent-green)';
+                btn.querySelector('.loader').style.display = 'none';
+                btn.querySelector('.btn-text').innerText = '▶ Run Script';
+            });
+        }
+
+        // --- Execution Simulator Logic ---
+        // Simulates running a python script in a terminal securely
+        function runScript(terminalId, btnElement) {
+            const terminal = document.getElementById(terminalId);
+            const loader = btnElement.querySelector('.loader');
+            const btnText = btnElement.querySelector('.btn-text');
+            
+            // Update button state to "Running"
+            btnElement.disabled = true;
+            btnElement.style.backgroundColor = 'var(--border-color)';
+            loader.style.display = 'inline-block';
+            btnText.innerText = " Executing..."; 
+            
+            // Hide terminal if already visible
+            terminal.style.display = 'none';
+
+            // Simulate execution latency (800ms)
+            setTimeout(() => {
+                // Restore button state
+                btnElement.disabled = false;
+                btnElement.style.backgroundColor = 'var(--accent-green)';
+                loader.style.display = 'none';
+                btnText.innerText = " ▶ Run Again";
+                
+                // Show terminal output
+                terminal.style.display = 'block';
+                
+                // Scroll page slightly down so terminal is visible
+                const scrollContainer = document.getElementById('main-scroll');
+                scrollContainer.scrollBy({ top: 500, behavior: 'smooth' });
+                
+            }, 800); 
+        }
+    </script>
+</body>
+</html>
